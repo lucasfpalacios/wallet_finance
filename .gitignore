@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+venv2/
+.venv/
+env/
+
+# Environment variables / secrets
+.env
+.env.local
+*.env
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp

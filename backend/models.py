@@ -177,10 +177,39 @@ class Investment:
             data["quantity"], data["purchase_price"], data["date"], data.get("id")
         )
 
+class Debt:
+    def __init__(self, creditor: str, amount: float, currency: str, description: str = "", due_date: str = None, status: str = "pending", id: str = None) -> None:
+        self.id = id if id else uuid.uuid4().hex
+        self.creditor = creditor
+        self.amount = amount
+        self.currency = currency
+        self.description = description
+        self.due_date = due_date
+        self.status = status
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "creditor": self.creditor,
+            "amount": self.amount,
+            "currency": self.currency,
+            "description": self.description,
+            "due_date": self.due_date,
+            "status": self.status,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> 'Debt':
+        return cls(
+            data["creditor"], data["amount"], data.get("currency", "ARS"),
+            data.get("description", ""), data.get("due_date"), data.get("status", "pending"), data.get("id")
+        )
+
+
 class Portfolio:
     def __init__(self):
         self.investments: list['Investment'] = []
-    
+
     def add_investment(self, inv: 'Investment'):
         self.investments.append(inv)
         

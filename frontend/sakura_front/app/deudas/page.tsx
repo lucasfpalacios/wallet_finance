@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useCurrency } from "../context/CurrencyContext";
 import { 
   FiPlus, 
@@ -43,6 +43,10 @@ export default function DeudasPage() {
   const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Currency Dropdown States
+  const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState(false);
+  const currencyDropdownRef = useRef<HTMLDivElement>(null);
+
   // Modal feedback
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -60,6 +64,17 @@ export default function DeudasPage() {
 
   useEffect(() => {
     fetchDebts();
+  }, []);
+
+  // Click outside to close currency dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (currencyDropdownRef.current && !currencyDropdownRef.current.contains(event.target as Node)) {
+        setIsCurrencyDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const fetchDebts = async () => {
@@ -519,15 +534,40 @@ export default function DeudasPage() {
 
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Moneda</label>
-                  <select
-                    value={debtCurrency}
-                    onChange={(e) => setDebtCurrency(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-[#161616] border border-slate-200 dark:border-[#222] rounded-2xl text-sm font-bold outline-none focus:border-pink-400 dark:focus:border-[#FFB7C5] transition-colors cursor-pointer"
-                  >
-                    <option value="ARS">ARS ($)</option>
-                    <option value="USD">USD (U$D)</option>
-                    <option value="EUR">EUR (€)</option>
-                  </select>
+                  <div className="relative" ref={currencyDropdownRef}>
+                    <div 
+                      onClick={() => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen)}
+                      className={`w-full px-4 py-3 bg-slate-50 dark:bg-[#161616] border ${isCurrencyDropdownOpen ? 'border-pink-400 dark:border-[#FFB7C5] ring-1 ring-pink-400 dark:ring-[#FFB7C5]' : 'border-slate-200 dark:border-[#222]'} rounded-2xl text-sm font-bold outline-none cursor-pointer flex justify-between items-center transition-all`}
+                    >
+                      <span>
+                        {debtCurrency === "ARS" ? "ARS ($)" : debtCurrency === "USD" ? "USD (U$D)" : "EUR (€)"}
+                      </span>
+                      <svg className={`fill-current h-4 w-4 text-slate-500 transition-transform duration-300 ${isCurrencyDropdownOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                    
+                    {isCurrencyDropdownOpen && (
+                      <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#161616] border border-slate-200 dark:border-[#222] rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                        <div className="p-1">
+                          {[
+                            { value: "ARS", label: "ARS ($)" },
+                            { value: "USD", label: "USD (U$D)" },
+                            { value: "EUR", label: "EUR (€)" }
+                          ].map((option) => (
+                            <div 
+                              key={option.value} 
+                              onClick={() => {
+                                setDebtCurrency(option.value);
+                                setIsCurrencyDropdownOpen(false);
+                              }}
+                              className={`px-4 py-3 cursor-pointer rounded-xl font-bold text-sm transition-colors ${debtCurrency === option.value ? 'bg-pink-50 dark:bg-[#FFB7C5]/10 text-pink-600 dark:text-[#FFB7C5]' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#222]/40'}`}
+                            >
+                              {option.label}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
