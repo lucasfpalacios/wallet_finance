@@ -1,0 +1,22 @@
+{
+  "investments": [
+    {
+      "id": "b5571a51717e4722bc0f44ce9907502b",
+      "ticker": "USD",
+      "name": "Dolar",
+      "type": "dolar",
+      "quantity": 1.57,
+      "purchase_price": 1.57,
+      "date": "2026-05-19"
+    },
+    {
+      "id": "4109a874398b43b781aa4f9c8ca2a0d3",
+      "ticker": "BTC",
+      "name": "Bitcoin",
+      "type": "crypto",
+      "quantity": 6.54e-06,
+      "purchase_price": 0.5,
+      "date": "2026-05-19"
+    }
+  ]
+}

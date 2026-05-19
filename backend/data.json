@@ -1,0 +1,94 @@
+{
+  "name": "Mis Finanzas",
+  "type": "expense",
+  "transactions": [],
+  "subcategories": [
+    {
+      "name": "Servicios",
+      "type": "expense",
+      "transactions": [
+        {
+          "id": "f2557a3bda184707b1a39a4fdd1feed6",
+          "amount": 1700.0,
+          "description": "Colectivo",
+          "date": "2026-05-18"
+        },
+        {
+          "id": "222480f6728e4d699ff287002992aa4f",
+          "amount": 10000.0,
+          "description": "colectivo",
+          "date": "2026-05-19"
+        },
+        {
+          "id": "a4ca5f2f30074cf4a31b33453319733b",
+          "amount": 10000.0,
+          "description": "uber",
+          "date": "2026-05-19"
+        }
+      ],
+      "subcategories": []
+    },
+    {
+      "name": "Comida",
+      "type": "expense",
+      "transactions": [
+        {
+          "id": "161d3d38b27b43bba2bade1fa5e31626",
+          "amount": 1200.0,
+          "description": "Arroz",
+          "date": "2026-05-17"
+        },
+        {
+          "id": "ab2516d4c36a4a14be430d95235a6b05",
+          "amount": 3500.0,
+          "description": "Cine",
+          "date": "2026-05-17"
+        },
+        {
+          "id": "924e960e03584fd79049ea6feb93b141",
+          "amount": 10000.0,
+          "description": "kiosco",
+          "date": "2026-05-19"
+        },
+        {
+          "id": "dbfaee0e18d4441aa19a310f69dc5bdf",
+          "amount": 10000.0,
+          "description": "cafe",
+          "date": "2026-05-19"
+        },
+        {
+          "id": "bd3b9b0988de41fab5fb2bd6cbbeeeec",
+          "amount": 10000.0,
+          "description": "mc",
+          "date": "2026-05-19"
+        },
+        {
+          "id": "6ac3e9c42b9e416685a2f069a26f2049",
+          "amount": 10000.0,
+          "description": "fast food",
+          "date": "2026-05-19"
+        }
+      ],
+      "subcategories": []
+    },
+    {
+      "name": "Farmacia",
+      "type": "expense",
+      "transactions": [
+        {
+          "id": "76fe0bfb9a494d489e7d54b8c052bc6b",
+          "amount": 17000.0,
+          "description": "Medicamentos",
+          "date": "2026-05-17"
+        }
+      ],
+      "subcategories": []
+    },
+    {
+      "name": "Sueldo",
+      "type": "income",
+      "transactions": [],
+      "subcategories": []
+    }
+  ]
+}

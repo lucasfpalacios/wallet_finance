@@ -1,0 +1,47 @@
+[
+  {
+    "id": "8ab0d7ce5b2e472ca5918529c3a2af97",
+    "amount": 50000.0,
+    "currency": "ARS",
+    "creditor": "Banco Galicia",
+    "description": "Tarjeta de cr\u00e9dito",
+    "due_date": "2026-05-15",
+    "status": "paid"
+  },
+  {
+    "id": "ddabdd6383634c4e92fc7166182ab349",
+    "amount": 726.0,
+    "currency": "USD",
+    "creditor": "Mart\u00edn",
+    "description": "Pasaje a San Andres",
+    "due_date": null,
+    "status": "pending"
+  },
+  {
+    "id": "7f51f7132f174a0887edb5997107bc83",
+    "amount": 379.48,
+    "currency": "USD",
+    "creditor": "Russo",
+    "description": "Hospedaje",
+    "due_date": null,
+    "status": "pending"
+  },
+  {
+    "id": "d5a0b25edb354b5b9e1fe9513235d527",
+    "amount": 55000.0,
+    "currency": "ARS",
+    "creditor": "Russo",
+    "description": "Valija",
+    "due_date": null,
+    "status": "pending"
+  },
+  {
+    "id": "422ccac7dc5e4a77b5d22ccd72155d85",
+    "amount": 11.86,
+    "currency": "USD",
+    "creditor": "Gusta",
+    "description": "Visa Peru",
+    "due_date": null,
+    "status": "pending"
+  }
+]

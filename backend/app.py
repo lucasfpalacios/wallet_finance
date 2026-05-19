@@ -1,7 +1,7 @@
 import os
 import json
 from datetime import datetime
-from models import Category, Transaction
+from backend.models import Category, Transaction
 
 def app():
   print("⏳ Cargando tus datos...")
