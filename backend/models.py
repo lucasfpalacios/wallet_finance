@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 class Transaction:
     def __init__(self, amount: float, description: str, date: str, id: str = None) -> None:
