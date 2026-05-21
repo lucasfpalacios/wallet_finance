@@ -1,21 +1,13 @@
 import os
 import json
 from datetime import datetime
-from backend.models import Category, Transaction
+from models import Category, Transaction
+from main import get_db, load_wallet, save_wallet
 
 def app():
   print("⏳ Cargando tus datos...")
-  
-  if os.path.exists("data.json"):
-    with open("data.json", "r") as file:
-      wallet_dict = json.load(file)
-      my_wallet = Category.from_dict(wallet_dict)
-      print("✅ ¡Datos cargados con éxito!")
-  else:
-    my_wallet = Category("Mis Finanzas")
-    print("✨ Billetera nueva creada desde cero. ¡Agrega tu primera categoría!")
-  
-  print("\n💰 Bienvenido a tu AI Manager de Finanzas! 💰")
+
+  my_wallet = load_wallet()
     
   while True:
     print("\n" + "="*30)
@@ -62,6 +54,7 @@ def app():
       if 0 <= cat_index < len(my_wallet.subcategories):
         selected_category = my_wallet.subcategories[cat_index]
         selected_category.add_transaction(new_transaction)
+        save_wallet(my_wallet)
         print(f"✅ ¡Gasto agregado con éxito el {date} en '{selected_category.name}'!")
       else:
         print("❌ Número de categoría inválido. El gasto no se guardó.")
@@ -80,6 +73,7 @@ def app():
       else:
         new_category = Category(cat_name)
         my_wallet.add_subcategory(new_category)
+        save_wallet(my_wallet)
         print(f"✅ ¡Categoría '{cat_name}' creada con éxito!")
         
     elif choice == "3":
@@ -124,9 +118,11 @@ def app():
         if action == "1":
           new_name = input("Ingresa el nuevo nombre: ")
           selected_category.name = new_name
+          save_wallet(my_wallet)
           print("✅ Nombre actualizado.")
         elif action == "2":
           my_wallet.subcategories.pop(cat_index)
+          save_wallet(my_wallet)
           print("✅ Categoría eliminada.")
         else:
           print("❌ Acción no válida.")
@@ -188,9 +184,11 @@ def app():
             new_desc = input("Ingresa la nueva descripción: ")
             selected_tx.amount = float(new_amount_str)
             selected_tx.description = new_desc
+            save_wallet(my_wallet)
             print("✅ Gasto actualizado.")
           elif action == "2":
             selected_category.transactions.pop(exp_index)
+            save_wallet(my_wallet)
             print("✅ Gasto eliminado.")
           else:
             print("❌ Acción no válida.")
@@ -201,6 +199,7 @@ def app():
         
     elif choice == "7":
       print("💾 Guardando tus datos...")
+      save_wallet(my_wallet)
       wallet_dict = my_wallet.to_dict()
       with open("data.json", "w") as file:
         json.dump(wallet_dict, file, indent=2)

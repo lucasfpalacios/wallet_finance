@@ -1,13 +1,13 @@
 import os
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from models import Category, Transaction, Investment, Portfolio, Debt
 from datetime import datetime
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 from dotenv import load_dotenv
+from models import Category, Transaction, Investment, Portfolio, Debt
 
 load_dotenv()
 
