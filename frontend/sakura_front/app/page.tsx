@@ -458,8 +458,8 @@ export default function Home() {
                 dotColor = "bg-amber-500";
               } else if (item.dataKey === "Hormiga") {
                 name = "Gastos Hormiga";
-                colorClass = "text-rose-600 dark:text-rose-400";
-                dotColor = "bg-rose-500";
+                colorClass = "text-[#8B4513] dark:text-[#A0522D]";
+                dotColor = "bg-[#8B4513]";
               }
               
               return (
@@ -680,8 +680,8 @@ export default function Home() {
                           <stop offset="95%" stopColor="#F59E0B" stopOpacity={0}/>
                         </linearGradient>
                         <linearGradient id="colorHormiga" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#E11D48" stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor="#E11D48" stopOpacity={0}/>
+                          <stop offset="5%" stopColor="#8B4513" stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor="#8B4513" stopOpacity={0}/>
                         </linearGradient>
                       </defs>
                       <XAxis dataKey="name" stroke="#64748b" tick={{fill: '#94a3b8', fontSize: 11}} tickLine={false} axisLine={false} dy={10} />
@@ -690,9 +690,11 @@ export default function Home() {
                       {chartView === "balance" && (
                         <>
                           <Area type="monotone" dataKey="Balance" name="Balance" stroke="#066A85" strokeWidth={3} fillOpacity={1} fill="url(#colorBalance)" />
+                          <Area type="monotone" dataKey="Income" name="Ingresos" stroke="#34D399" strokeWidth={2} fillOpacity={0.15} fill="url(#colorIncome)" />
+                          <Area type="monotone" dataKey="Expenses" name="Gastos" stroke="#F43F5E" strokeWidth={2} fillOpacity={0.15} fill="url(#colorExpenses)" />
                           <Area type="monotone" dataKey="Investments" name="Inversiones" stroke="#A78BFA" strokeWidth={2} fillOpacity={0.15} fill="url(#colorInvestments)" />
                           <Area type="monotone" dataKey="Debts" name="Deudas" stroke="#F59E0B" strokeWidth={2} fillOpacity={0.15} fill="url(#colorDebts)" />
-                          <Area type="monotone" dataKey="Hormiga" name="Gastos Hormiga" stroke="#E11D48" strokeWidth={2} fillOpacity={0.15} fill="url(#colorHormiga)" />
+                          <Area type="monotone" dataKey="Hormiga" name="Gastos Hormiga" stroke="#8B4513" strokeWidth={2} fillOpacity={0.15} fill="url(#colorHormiga)" />
                         </>
                       )}
                       {chartView === "details" && (
@@ -708,7 +710,7 @@ export default function Home() {
                         <Area type="monotone" dataKey="Debts" name="Deudas" stroke="#F59E0B" strokeWidth={3} fillOpacity={1} fill="url(#colorDebts)" />
                       )}
                       {chartView === "hormiga" && (
-                        <Area type="monotone" dataKey="Hormiga" name="Gastos Hormiga" stroke="#E11D48" strokeWidth={3} fillOpacity={1} fill="url(#colorHormiga)" />
+                        <Area type="monotone" dataKey="Hormiga" name="Gastos Hormiga" stroke="#8B4513" strokeWidth={3} fillOpacity={1} fill="url(#colorHormiga)" />
                       )}
                     </AreaChart>
                   </ResponsiveContainer>

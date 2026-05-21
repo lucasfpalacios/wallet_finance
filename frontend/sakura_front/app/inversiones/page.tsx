@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
 import { useCurrency } from "../context/CurrencyContext";
-import { FiTrash2, FiRefreshCw } from "react-icons/fi";
+import { FiTrash2, FiRefreshCw, FiPlus, FiX, FiTag, FiType, FiHash, FiDollarSign, FiEdit2 } from "react-icons/fi";
 
 const COLORS = [
   "#F472B6", "#38BDF8", "#FBBF24", "#34D399", "#A78BFA", "#FB7185", "#2DD4BF"
@@ -32,6 +32,10 @@ export default function Inversiones() {
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const typeDropdownRef = React.useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingInvestment, setEditingInvestment] = useState<any>(null);
+  const [investmentToDelete, setInvestmentToDelete] = useState<string | null>(null);
 
   // Click outside to close dropdown
   useEffect(() => {
@@ -99,6 +103,26 @@ export default function Inversiones() {
     fetchInvestments();
   }, []);
 
+  const handleOpenAddForm = () => {
+    setEditingInvestment(null);
+    setTicker("");
+    setName("");
+    setType("crypto");
+    setQuantity("");
+    setPurchasePrice("");
+    setIsFormOpen(true);
+  };
+
+  const handleOpenEditForm = (inv: any) => {
+    setEditingInvestment(inv);
+    setTicker(inv.ticker);
+    setName(inv.name);
+    setType(inv.type);
+    setQuantity(inv.quantity.toString());
+    setPurchasePrice(inv.purchase_price.toString());
+    setIsFormOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -111,9 +135,14 @@ export default function Inversiones() {
       purchase_price: parseFloat(purchasePrice)
     };
 
+    const method = editingInvestment ? "PUT" : "POST";
+    const url = editingInvestment 
+      ? `http://127.0.0.1:8000/api/investments/${editingInvestment.id}`
+      : "http://127.0.0.1:8000/api/investments";
+
     try {
-      await fetch("http://127.0.0.1:8000/api/investments", {
-        method: "POST",
+      await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -123,6 +152,7 @@ export default function Inversiones() {
       setQuantity("");
       setPurchasePrice("");
       setIsSubmitting(false);
+      setIsFormOpen(false);
       fetchInvestments();
     } catch (error) {
       console.error("Error saving investment:", error);
@@ -131,9 +161,13 @@ export default function Inversiones() {
   };
 
   const deleteInvestment = async (id: string) => {
-    if (!confirm("¿Eliminar inversión?")) return;
+    setInvestmentToDelete(id);
+  };
+
+  const confirmDelete = async (id: string) => {
     try {
       await fetch(`http://127.0.0.1:8000/api/investments/${id}`, { method: "DELETE" });
+      setInvestmentToDelete(null);
       fetchInvestments();
     } catch (error) {
       console.error("Error deleting:", error);
@@ -301,15 +335,25 @@ export default function Inversiones() {
       <div className="w-full px-4 sm:px-8 lg:px-12 py-4 sm:py-8 max-w-[100vw]">
         <header className="mb-8 sm:mb-12 flex flex-col md:flex-row md:justify-between md:items-end gap-4 border-b border-slate-200 dark:border-[#222] pb-6">
           <div>
-            <h1 className="text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">Inversiones</h1>
-            <p className="text-blue-600 dark:text-[#87CEEB] text-lg font-medium">Haz crecer tu patrimonio</p>
+            <span className="text-blue-600 dark:text-[#87CEEB] font-semibold text-sm tracking-wide uppercase">Sakura Assets</span>
+            <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-1 mb-1">Inversiones</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Haz crecer tu patrimonio.</p>
           </div>
-          <button 
-            onClick={() => fetchInvestments()}
-            className="flex items-center gap-2 bg-white dark:bg-[#111] border border-slate-200 dark:border-[#333] px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-pink-500 transition-colors shadow-sm w-max"
-          >
-            <FiRefreshCw /> Actualizar Precios
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button 
+              onClick={() => fetchInvestments()}
+              className="flex items-center gap-2 bg-white dark:bg-[#111] border border-slate-200 dark:border-[#333] px-4 py-3 rounded-2xl text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-pink-500 transition-colors shadow-sm cursor-pointer"
+            >
+              <FiRefreshCw /> Actualizar
+            </button>
+            <button 
+              onClick={handleOpenAddForm}
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-[#87CEEB] dark:to-[#6cbce0] text-white dark:text-black font-extrabold px-5 py-3 rounded-2xl hover:opacity-90 transition-all shadow-sm hover:scale-[1.02] duration-300 cursor-pointer text-sm"
+            >
+              <FiPlus className="text-xl" />
+              <span>Nuevo Activo</span>
+            </button>
+          </div>
         </header>
 
         {/* Top Summary Cards */}
@@ -442,11 +486,11 @@ export default function Inversiones() {
           </div>
         </div>
 
-        {/* Bottom Section: Table and Form */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Bottom Section: Table */}
+        <div className="w-full">
           
           {/* Main Portfolio List */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="space-y-8">
             <div className="bg-white dark:bg-[#111] p-4 sm:p-8 rounded-3xl border border-slate-200 dark:border-[#222] shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none">
               <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">Tus Activos</h2>
               
@@ -501,9 +545,22 @@ export default function Inversiones() {
                               </div>
                             </td>
                             <td className="py-4 text-center">
-                              <button onClick={() => deleteInvestment(inv.id)} className="p-2 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer">
-                                <FiTrash2 />
-                              </button>
+                              <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                  onClick={() => handleOpenEditForm(inv)} 
+                                  className="p-2 text-slate-400 hover:text-blue-500 dark:hover:text-[#87CEEB] transition-colors cursor-pointer"
+                                  title="Editar"
+                                >
+                                  <FiEdit2 />
+                                </button>
+                                <button 
+                                  onClick={() => deleteInvestment(inv.id)} 
+                                  className="p-2 text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                                  title="Eliminar"
+                                >
+                                  <FiTrash2 />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         );
@@ -514,36 +571,58 @@ export default function Inversiones() {
               )}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Add Investment Form */}
-          <div className="bg-white dark:bg-[#111] p-6 rounded-3xl border border-slate-200 dark:border-[#222] shadow-[0_4px_20px_rgb(0,0,0,0.03)] dark:shadow-none flex flex-col gap-5 w-full">
-            <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-2">Registrar Activo</h2>
+      {/* Add Investment Form Popup Modal */}
+      {isFormOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex justify-center items-center p-4">
+          <div className="bg-white dark:bg-[#111] rounded-[2.5rem] border border-slate-200 dark:border-[#222] max-w-md w-full p-8 shadow-2xl flex flex-col gap-6 animate-in scale-in duration-300">
             
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                {editingInvestment ? "Editar Activo" : "Registrar Activo"}
+              </h2>
+              <button 
+                onClick={() => setIsFormOpen(false)}
+                className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-[#1a1a1a] cursor-pointer"
+              >
+                <FiX className="text-xl" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              
               <div>
-                <label className="text-xs text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">Ticker / Símbolo</label>
-                <input 
-                  type="text" required value={ticker} onChange={(e) => setTicker(e.target.value.toUpperCase())}
-                  className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#333] rounded-xl p-3 text-slate-900 dark:text-white uppercase font-bold focus:ring-1 focus:ring-blue-400 outline-none transition-all"
-                  placeholder="Ej: BTC, AAPL"
-                />
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Ticker / Símbolo</label>
+                <div className="relative">
+                  <FiTag className="absolute left-4 top-3.5 text-slate-400" />
+                  <input 
+                    type="text" required value={ticker} onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#161616] border border-slate-200 dark:border-[#222] rounded-2xl text-sm font-semibold uppercase outline-none focus:border-blue-400 dark:focus:border-[#87CEEB] transition-colors"
+                    placeholder="Ej: BTC, AAPL"
+                  />
+                </div>
               </div>
               
               <div>
-                <label className="text-xs text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">Nombre Comercial</label>
-                <input 
-                  type="text" required value={name} onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#333] rounded-xl p-3 text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-400 outline-none transition-all"
-                  placeholder="Ej: Bitcoin"
-                />
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Nombre Comercial</label>
+                <div className="relative">
+                  <FiType className="absolute left-4 top-3.5 text-slate-400" />
+                  <input 
+                    type="text" required value={name} onChange={(e) => setName(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#161616] border border-slate-200 dark:border-[#222] rounded-2xl text-sm font-semibold outline-none focus:border-blue-400 dark:focus:border-[#87CEEB] transition-colors"
+                    placeholder="Ej: Bitcoin"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="text-xs text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">Tipo de Activo</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Tipo de Activo</label>
                 <div className="relative" ref={typeDropdownRef}>
                   <div 
                     onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-                    className={`w-full bg-slate-50 dark:bg-[#1a1a1a] border ${isTypeDropdownOpen ? 'border-blue-400 dark:border-[#87CEEB] ring-1 ring-blue-400 dark:ring-[#87CEEB]' : 'border-slate-200 dark:border-[#333]'} rounded-xl p-3 text-slate-900 dark:text-white transition-all font-medium cursor-pointer flex justify-between items-center`}
+                    className={`w-full px-4 py-3 bg-slate-50 dark:bg-[#161616] border ${isTypeDropdownOpen ? 'border-blue-400 dark:border-[#87CEEB] ring-1 ring-blue-400 dark:ring-[#87CEEB]' : 'border-slate-200 dark:border-[#222]'} rounded-2xl text-sm font-bold outline-none cursor-pointer flex justify-between items-center transition-all`}
                   >
                     <span>
                       {ASSET_TYPES.find(t => t.value === type)?.label || "Selecciona un tipo..."}
@@ -552,7 +631,7 @@ export default function Inversiones() {
                   </div>
                   
                   {isTypeDropdownOpen && (
-                    <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#333] rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="absolute z-50 w-full mt-2 bg-white dark:bg-[#161616] border border-slate-200 dark:border-[#222] rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                       <div className="p-1">
                         {ASSET_TYPES.map((t) => (
                           <div 
@@ -561,7 +640,7 @@ export default function Inversiones() {
                               setType(t.value);
                               setIsTypeDropdownOpen(false);
                             }}
-                            className={`px-4 py-3 cursor-pointer rounded-lg font-medium transition-colors ${type === t.value ? 'bg-blue-50 dark:bg-[#87CEEB]/10 text-blue-600 dark:text-[#87CEEB]' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#222]'}`}
+                            className={`px-4 py-3 cursor-pointer rounded-xl font-bold text-sm transition-colors ${type === t.value ? 'bg-blue-50 dark:bg-[#87CEEB]/10 text-blue-600 dark:text-[#87CEEB]' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#222]/40'}`}
                           >
                             {t.label}
                           </div>
@@ -574,33 +653,71 @@ export default function Inversiones() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">Cantidad</label>
-                  <input 
-                    type="number" step="0.000001" required value={quantity} onChange={(e) => setQuantity(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#333] rounded-xl p-3 text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-400 outline-none transition-all"
-                    placeholder="Ej: 0.5"
-                  />
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Cantidad</label>
+                  <div className="relative">
+                    <FiHash className="absolute left-4 top-3.5 text-slate-400" />
+                    <input 
+                      type="number" step="0.000001" required value={quantity} onChange={(e) => setQuantity(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#161616] border border-slate-200 dark:border-[#222] rounded-2xl text-sm font-bold outline-none focus:border-blue-400 dark:focus:border-[#87CEEB] transition-colors"
+                      placeholder="Ej: 0.5"
+                    />
+                  </div>
                 </div>
                 <div>
-                  <label className="text-xs text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">Precio Compra</label>
-                  <input 
-                    type="number" step="0.01" required value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#333] rounded-xl p-3 text-slate-900 dark:text-white focus:ring-1 focus:ring-blue-400 outline-none transition-all"
-                    placeholder="Precio en USD"
-                  />
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">Precio Compra</label>
+                  <div className="relative">
+                    <FiDollarSign className="absolute left-4 top-3.5 text-slate-400" />
+                    <input 
+                      type="number" step="0.01" required value={purchasePrice} onChange={(e) => setPurchasePrice(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#161616] border border-slate-200 dark:border-[#222] rounded-2xl text-sm font-bold outline-none focus:border-blue-400 dark:focus:border-[#87CEEB] transition-colors"
+                      placeholder="En USD"
+                    />
+                  </div>
                 </div>
               </div>
 
               <button 
                 type="submit" disabled={isSubmitting}
-                className="mt-2 w-full bg-[#87CEEB] hover:bg-[#6cbce0] text-black font-bold py-3 sm:py-4 rounded-2xl transition-all duration-300 hover:-translate-y-1 shadow-sm disabled:opacity-50"
+                className="w-full mt-2 bg-gradient-to-r from-blue-500 to-cyan-500 dark:from-[#87CEEB] dark:to-[#6cbce0] text-white dark:text-black font-extrabold py-3.5 rounded-2xl hover:opacity-90 transition-all shadow-[0_4px_15px_rgba(135,206,235,0.2)] hover:scale-[1.01] duration-300 disabled:opacity-50 cursor-pointer text-sm"
               >
-                {isSubmitting ? "Guardando..." : "+ Registrar Activo"}
+                {isSubmitting ? "Guardando..." : editingInvestment ? "Guardar Cambios" : "Registrar Activo"}
               </button>
             </form>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {investmentToDelete && (
+        <div className="fixed inset-0 z-[60] bg-black/60 dark:bg-black/80 backdrop-blur-sm flex justify-center items-center p-4">
+          <div className="bg-white dark:bg-[#111] rounded-[2.5rem] border border-slate-200 dark:border-[#222] max-w-sm w-full p-8 shadow-2xl flex flex-col gap-6 animate-in zoom-in-95 duration-200">
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-500/10 text-red-500 rounded-full flex items-center justify-center text-2xl mb-2">
+                <FiTrash2 />
+              </div>
+              <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white">¿Eliminar Inversión?</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">
+                Esta acción no se puede deshacer. Se eliminará permanentemente de tu portafolio.
+              </p>
+            </div>
+            <div className="flex gap-3 mt-2">
+              <button 
+                onClick={() => setInvestmentToDelete(null)}
+                className="flex-1 px-4 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#1a1a1a] dark:hover:bg-[#222] text-slate-700 dark:text-slate-300 font-extrabold rounded-2xl transition-all cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={() => confirmDelete(investmentToDelete)}
+                className="flex-1 px-4 py-3.5 bg-gradient-to-r from-red-500 to-rose-600 text-white font-extrabold rounded-2xl transition-all shadow-[0_4px_15px_rgba(239,68,68,0.3)] hover:scale-[1.02] cursor-pointer"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

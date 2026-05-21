@@ -40,7 +40,7 @@ export default function DeudasPage() {
   const [amount, setAmount] = useState("");
   const [debtCurrency, setDebtCurrency] = useState("ARS");
   const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [debtDate, setDebtDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Currency Dropdown States
@@ -96,7 +96,7 @@ export default function DeudasPage() {
     setAmount("");
     setDebtCurrency(currency); // Default to active global currency
     setDescription("");
-    setDueDate("");
+    setDebtDate("");
     setIsFormOpen(true);
   };
 
@@ -106,7 +106,7 @@ export default function DeudasPage() {
     setAmount(debt.amount.toString());
     setDebtCurrency(debt.currency);
     setDescription(debt.description);
-    setDueDate(debt.due_date || "");
+    setDebtDate(debt.due_date || "");
     setIsFormOpen(true);
   };
 
@@ -122,7 +122,7 @@ export default function DeudasPage() {
         amount: parsedAmount,
         currency: debtCurrency,
         description,
-        due_date: dueDate || null,
+        due_date: debtDate || new Date().toISOString().split('T')[0],
         status: editingDebt ? editingDebt.status : "pending"
       };
 
@@ -225,14 +225,32 @@ export default function DeudasPage() {
     return debtsComputed.filter(d => d.status === "paid");
   }, [debtsComputed]);
 
-  // Detect overdue debts
-  const isOverdue = (dateStr: string | null) => {
-    if (!dateStr) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(dateStr + "T12:00:00");
-    return dueDate < today;
-  };
+  // Grouped debts
+  const groupedPendingDebts = useMemo(() => {
+    const grouped = pendingDebts.reduce((acc, debt) => {
+      const key = debt.creditor.trim().toLowerCase();
+      if (!acc[key]) {
+        acc[key] = { creditor: debt.creditor, totalARS: 0, debts: [] };
+      }
+      acc[key].totalARS += debt.amountARS;
+      acc[key].debts.push(debt);
+      return acc;
+    }, {} as Record<string, { creditor: string; totalARS: number; debts: typeof pendingDebts }>);
+    return Object.values(grouped).sort((a, b) => b.totalARS - a.totalARS);
+  }, [pendingDebts]);
+
+  const groupedPaidDebts = useMemo(() => {
+    const grouped = paidDebts.reduce((acc, debt) => {
+      const key = debt.creditor.trim().toLowerCase();
+      if (!acc[key]) {
+        acc[key] = { creditor: debt.creditor, totalARS: 0, debts: [] };
+      }
+      acc[key].totalARS += debt.amountARS;
+      acc[key].debts.push(debt);
+      return acc;
+    }, {} as Record<string, { creditor: string; totalARS: number; debts: typeof paidDebts }>);
+    return Object.values(grouped).sort((a, b) => b.totalARS - a.totalARS);
+  }, [paidDebts]);
 
   return (
     <div className="min-h-screen font-sans bg-slate-50 dark:bg-[#0a0a0a] text-slate-800 dark:text-slate-200 py-8 px-4 sm:px-8 max-w-[100vw] overflow-x-hidden">
@@ -351,7 +369,7 @@ export default function DeudasPage() {
           </div>
         ) : (
           <div>
-            {(activeTab === "pending" ? pendingDebts : paidDebts).length === 0 ? (
+            {(activeTab === "pending" ? groupedPendingDebts : groupedPaidDebts).length === 0 ? (
               <div className="text-center py-24 bg-white dark:bg-[#111] rounded-[2rem] border border-slate-200 dark:border-[#222] border-dashed">
                 <span className="text-4xl block mb-3">🌸</span>
                 <p className="text-slate-400 dark:text-slate-500 text-sm font-semibold">
@@ -362,114 +380,127 @@ export default function DeudasPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {(activeTab === "pending" ? pendingDebts : paidDebts).map((debt) => {
-                  const isOver = activeTab === "pending" && isOverdue(debt.due_date);
+                {(activeTab === "pending" ? groupedPendingDebts : groupedPaidDebts).map((group) => {
                   
                   return (
                     <div 
-                      key={debt.id}
-                      className={`bg-white dark:bg-[#111] rounded-3xl border p-6 flex flex-col justify-between gap-6 transition-all duration-300 shadow-[0_4px_18px_rgba(0,0,0,0.01)] hover:scale-[1.01] hover:shadow-[0_8px_25px_rgba(0,0,0,0.03)] ${
-                        isOver 
-                          ? "border-red-300 dark:border-red-950/60 bg-red-50/10" 
-                          : "border-slate-200 dark:border-[#222]"
-                      }`}
+                      key={group.creditor}
+                      className={`bg-white dark:bg-[#111] rounded-3xl border p-6 flex flex-col gap-6 transition-all duration-300 shadow-[0_4px_18px_rgba(0,0,0,0.01)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.03)] border-slate-200 dark:border-[#222]`}
                     >
-                      {/* Debt Info */}
-                      <div className="flex justify-between items-start gap-4">
-                        <div className="flex gap-4">
+                      {/* Group Header */}
+                      <div className="flex justify-between items-center pb-4 border-b border-slate-100 dark:border-[#222]/50">
+                        <div className="flex gap-4 items-center">
                           <div className={`p-3 rounded-2xl shrink-0 text-xl flex items-center justify-center h-12 w-12 ${
-                            debt.status === "paid" 
+                            activeTab === "paid" 
                               ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
-                              : isOver 
-                              ? "bg-red-100 dark:bg-red-500/10 text-red-500" 
                               : "bg-pink-100 dark:bg-pink-500/10 text-pink-500 dark:text-[#FFB7C5]"
                           }`}>
                             <UserIcon />
                           </div>
-                          <div>
-                            <h3 className="font-extrabold text-lg text-slate-900 dark:text-white leading-tight">
-                              {debt.creditor}
-                            </h3>
-                            {debt.description && (
-                              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 leading-normal">
-                                {debt.description}
-                              </p>
-                            )}
-                            
-                            {/* Date Indicators */}
-                            {debt.due_date && (
-                              <div className="flex items-center gap-1.5 mt-2.5">
-                                <CalendarIcon className="text-slate-400 text-xs shrink-0" />
-                                <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                                  isOver 
-                                    ? "text-red-500" 
-                                    : "text-slate-400 dark:text-slate-500"
-                                }`}>
-                                  Vence: {debt.due_date} {isOver && "(VENCIDO)"}
-                                </span>
-                              </div>
-                            )}
-                          </div>
+                          <h3 className="font-extrabold text-xl text-slate-900 dark:text-white leading-tight">
+                            {group.creditor}
+                          </h3>
                         </div>
-
-                        {/* Amount */}
                         <div className="text-right">
+                          <span className="text-xs text-slate-400 font-bold uppercase tracking-wider block mb-1">
+                            Total {activeTab === "pending" ? "Pendiente" : "Liquidado"}
+                          </span>
                           <p className="text-xl font-extrabold text-slate-950 dark:text-white tracking-tight">
-                            {new Intl.NumberFormat(debt.currency === "ARS" ? "es-AR" : "en-US", {
-                              style: "currency",
-                              currency: debt.currency,
-                              minimumFractionDigits: debt.currency === "ARS" ? 0 : 2
-                            }).format(debt.amount)}
+                            {formatCurrency(group.totalARS)}
                           </p>
-                          {/* Equivalent converted amount if global currency is different */}
-                          {currency !== debt.currency && (
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-1 uppercase">
-                              ≈ {formatCurrency(debt.amountARS)}
-                            </p>
-                          )}
                         </div>
                       </div>
 
-                      {/* Card Actions */}
-                      <div className="flex justify-between items-center border-t border-slate-100 dark:border-[#222]/50 pt-4 mt-auto">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleOpenEditForm(debt)}
-                            className="p-2 rounded-xl border border-slate-200 dark:border-[#2b2b2b] text-slate-500 hover:text-pink-500 hover:border-pink-200 dark:text-slate-400 dark:hover:text-[#FFB7C5] transition-all cursor-pointer"
-                            title="Editar Deuda"
-                          >
-                            <EditIcon />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(debt.id)}
-                            className="p-2 rounded-xl border border-slate-200 dark:border-[#2b2b2b] text-slate-500 hover:text-red-500 hover:border-red-200 dark:text-slate-400 dark:hover:text-red-400 transition-all cursor-pointer"
-                            title="Eliminar Deuda"
-                          >
-                            <TrashIcon />
-                          </button>
-                        </div>
+                      {/* Individual Debts */}
+                      <div className="flex flex-col gap-4">
+                        {group.debts.map(debt => {
+                          return (
+                            <div key={debt.id} className="flex flex-col gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-[#161616] border border-slate-100 dark:border-[#222]/50">
+                              <div className="flex justify-between items-start gap-4">
+                                <div>
+                                  {debt.description ? (
+                                    <p className="text-sm text-slate-700 dark:text-slate-300 font-semibold leading-normal">
+                                      {debt.description}
+                                    </p>
+                                  ) : (
+                                    <p className="text-sm text-slate-400 dark:text-slate-500 italic leading-normal">
+                                      Sin descripción
+                                    </p>
+                                  )}
+                                  
+                                  {/* Date Indicators */}
+                                  {debt.due_date && (
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                      <CalendarIcon className="text-slate-400 text-[10px] shrink-0" />
+                                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                                        Fecha: {debt.due_date}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
 
-                        {/* Complete / Undo payment */}
-                        <button
-                          onClick={() => handleToggleStatus(debt)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-extrabold text-xs transition-all cursor-pointer border ${
-                            debt.status === "paid"
-                              ? "bg-slate-50 dark:bg-[#1a1a1a] border-slate-200 dark:border-[#2c2c2c] text-slate-500 hover:text-pink-500"
-                              : "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 border-emerald-200/40 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400"
-                          }`}
-                        >
-                          {debt.status === "paid" ? (
-                            <>
-                              <ClockIcon />
-                              <span>Marcar Pendiente</span>
-                            </>
-                          ) : (
-                            <>
-                              <CheckIcon />
-                              <span>Marcar Pagada</span>
-                            </>
-                          )}
-                        </button>
+                                {/* Amount */}
+                                <div className="text-right shrink-0">
+                                  <p className="text-sm font-extrabold text-slate-950 dark:text-white tracking-tight">
+                                    {new Intl.NumberFormat(debt.currency === "ARS" ? "es-AR" : "en-US", {
+                                      style: "currency",
+                                      currency: debt.currency,
+                                      minimumFractionDigits: debt.currency === "ARS" ? 0 : 2
+                                    }).format(debt.amount)}
+                                  </p>
+                                  {/* Equivalent converted amount if global currency is different */}
+                                  {currency !== debt.currency && (
+                                    <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mt-0.5 uppercase">
+                                      ≈ {formatCurrency(debt.amountARS)}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Card Actions */}
+                              <div className="flex justify-between items-center border-t border-slate-200 dark:border-[#2b2b2b] pt-3 mt-1">
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => handleOpenEditForm(debt)}
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-500/10 dark:hover:text-[#FFB7C5] transition-all cursor-pointer"
+                                    title="Editar Deuda"
+                                  >
+                                    <EditIcon size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(debt.id)}
+                                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all cursor-pointer"
+                                    title="Eliminar Deuda"
+                                  >
+                                    <TrashIcon size={14} />
+                                  </button>
+                                </div>
+
+                                {/* Complete / Undo payment */}
+                                <button
+                                  onClick={() => handleToggleStatus(debt)}
+                                  className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer border ${
+                                    debt.status === "paid"
+                                      ? "bg-slate-100 dark:bg-[#222] border-slate-200 dark:border-[#333] text-slate-500 hover:text-pink-500"
+                                      : "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/20 border-emerald-200/40 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400"
+                                  }`}
+                                >
+                                  {debt.status === "paid" ? (
+                                    <>
+                                      <ClockIcon size={12} />
+                                      <span>Pendiente</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckIcon size={12} />
+                                      <span>Pagada</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -588,13 +619,13 @@ export default function DeudasPage() {
 
               {/* Due Date */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha de Vencimiento (Opcional)</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Fecha de la Deuda (Opcional)</label>
                 <div className="relative">
                   <CalendarIcon className="absolute left-4 top-3.5 text-slate-400" />
                   <input
                     type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
+                    value={debtDate}
+                    onChange={(e) => setDebtDate(e.target.value)}
                     className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-[#161616] border border-slate-200 dark:border-[#222] rounded-2xl text-sm font-semibold outline-none focus:border-pink-400 dark:focus:border-[#FFB7C5] transition-colors cursor-pointer"
                   />
                 </div>
