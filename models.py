@@ -1,8 +1,8 @@
 import uuid
-from typing import List
+from typing import List, Optional
 
 class Transaction:
-    def __init__(self, amount: float, description: str, date: str, id: str = None) -> None:
+    def __init__(self, amount: float, description: str, date: str, id: Optional[str] = None) -> None:
       self.id = id if id else uuid.uuid4().hex
       self.amount = amount
       self.description = description
@@ -151,7 +151,7 @@ class Category:
     return category
 
 class Investment:
-    def __init__(self, ticker: str, name: str, inv_type: str, quantity: float, purchase_price: float, date: str, id: str = None) -> None:
+    def __init__(self, ticker: str, name: str, inv_type: str, quantity: float, purchase_price: float, date: str, id: Optional[str] = None) -> None:
         self.id = id if id else uuid.uuid4().hex
         self.ticker = ticker
         self.name = name
@@ -179,7 +179,7 @@ class Investment:
         )
 
 class Debt:
-    def __init__(self, creditor: str, amount: float, currency: str, description: str = "", due_date: str = None, status: str = "pending", id: str = None) -> None:
+    def __init__(self, creditor: str, amount: float, currency: str, description: str = "", due_date: Optional[str] = None, status: str = "pending", id: Optional[str] = None) -> None:
         self.id = id if id else uuid.uuid4().hex
         self.creditor = creditor
         self.amount = amount
