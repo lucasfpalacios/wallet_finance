@@ -9,9 +9,16 @@ from pymongo.errors import PyMongoError
 from dotenv import load_dotenv
 from models import Category, Transaction, Investment, Portfolio, Debt
 
-load_dotenv()
+import os
+env_path = os.path.join(os.path.dirname(__file__), "backend", ".env")
+if os.path.exists(env_path):
+    load_dotenv(env_path)
+else:
+    load_dotenv()
 
-MONGO_URI = os.environ["MONGO_URI"]
+MONGO_URI = os.getenv("MONGO_URI")
+if not MONGO_URI:
+    raise ValueError("MONGO_URI no está configurada. Por favor, asegúrate de tener un archivo .env válido.")
 MONGO_DB = os.getenv("MONGO_DB", "finanzas_db")
 
 WALLET_DOC_ID = "main_wallet"
