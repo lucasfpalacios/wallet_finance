@@ -51,7 +51,7 @@ export default function Inversiones() {
   // Fetch investments from backend
   const fetchInvestments = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/investments");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/investments`);
       const data = await res.json();
       setInvestments(data.investments || []);
       updateLivePrices(data.investments || []);
@@ -137,8 +137,8 @@ export default function Inversiones() {
 
     const method = editingInvestment ? "PUT" : "POST";
     const url = editingInvestment 
-      ? `http://127.0.0.1:8000/api/investments/${editingInvestment.id}`
-      : "http://127.0.0.1:8000/api/investments";
+      ? `${process.env.NEXT_PUBLIC_API_URL}/api/investments/${editingInvestment.id}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/api/investments`;
 
     try {
       await fetch(url, {
@@ -166,7 +166,7 @@ export default function Inversiones() {
 
   const confirmDelete = async (id: string) => {
     try {
-      await fetch(`http://127.0.0.1:8000/api/investments/${id}`, { method: "DELETE" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/investments/${id}`, { method: "DELETE" });
       setInvestmentToDelete(null);
       fetchInvestments();
     } catch (error) {

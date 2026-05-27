@@ -79,7 +79,7 @@ export default function DeudasPage() {
 
   const fetchDebts = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/debts");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/debts`);
       if (res.ok) {
         setDebts(await res.json());
       }
@@ -127,8 +127,8 @@ export default function DeudasPage() {
       };
 
       const url = editingDebt 
-        ? `http://127.0.0.1:8000/api/debts/${editingDebt.id}`
-        : "http://127.0.0.1:8000/api/debts";
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/debts/${editingDebt.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/debts`;
 
       const method = editingDebt ? "PUT" : "POST";
 
@@ -154,7 +154,7 @@ export default function DeudasPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("¿Estás seguro de que deseas eliminar esta deuda?")) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/debts/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/debts/${id}`, {
         method: "DELETE"
       });
       if (res.ok) {
@@ -168,7 +168,7 @@ export default function DeudasPage() {
   const handleToggleStatus = async (debt: Debt) => {
     try {
       const nextStatus = debt.status === "pending" ? "paid" : "pending";
-      const res = await fetch(`http://127.0.0.1:8000/api/debts/${debt.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/debts/${debt.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: nextStatus })

@@ -86,7 +86,7 @@ export const NotificationProvider = ({ children }: { children: React.ReactNode }
   // Automated checker engine
   const refreshNotifications = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/report");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/report`);
       if (!res.ok) return;
       const walletData = await res.json();
 

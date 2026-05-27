@@ -86,20 +86,20 @@ export default function AlertasPage() {
     }
   }, []);
 
-  // Fetch transactions from backend
-  const fetchWalletData = async () => {
-    try {
-      const res = await fetch("http://127.0.0.1:8000/api/report");
-      const data = await res.json();
-      setWallet(data);
-    } catch (error) {
-      console.error("Error fetching transactions for alerts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    // Fetch transactions from backend
+    const fetchWalletData = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/report`);
+        const data = await res.json();
+        setWallet(data);
+      } catch (error) {
+        console.error("Error fetching transactions for alerts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchWalletData();
   }, []);
 

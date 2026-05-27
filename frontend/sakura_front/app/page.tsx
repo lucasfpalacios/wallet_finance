@@ -93,20 +93,20 @@ export default function Home() {
 
   const fetchData = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/report?month=${currentMonth}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/report?month=${currentMonth}`);
       const data = await res.json();
       setWallet(data);
       
-      const globalRes = await fetch(`http://127.0.0.1:8000/api/report`);
+      const globalRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/report`);
       setGlobalWallet(await globalRes.json());
       
-      const invRes = await fetch(`http://127.0.0.1:8000/api/investments`);
+      const invRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/investments`);
       if (invRes.ok) {
         const invData = await invRes.json();
         setInvestments(invData.investments || []);
       }
       
-      const debtsRes = await fetch(`http://127.0.0.1:8000/api/debts`);
+      const debtsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/debts`);
       if (debtsRes.ok) {
         setDebts(await debtsRes.json());
       }
@@ -126,7 +126,7 @@ export default function Home() {
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/category", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/category`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newCatName, type: newCatType }),
@@ -205,7 +205,7 @@ export default function Home() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/transaction", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transaction`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -235,7 +235,7 @@ export default function Home() {
   const confirmDelete = async () => {
     if (!transactionToDelete) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/transaction/${transactionToDelete}`, { method: "DELETE" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transaction/${transactionToDelete}`, { method: "DELETE" });
       if (res.ok) {
         setTransactionToDelete(null);
         await fetchData();
@@ -258,7 +258,7 @@ export default function Home() {
     if (!editingTransaction) return;
     
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/transaction/${editingTransaction.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transaction/${editingTransaction.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
